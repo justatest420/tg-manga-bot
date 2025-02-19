@@ -3,8 +3,10 @@ from bot import *
 
 
 async def async_main():
-    db = DB()
-    await db.connect()
+    if not env_vars['DB_URL']:
+        db = DB()
+        await db.connect()
+    pass
     
 if __name__ == '__main__':
     loop = aio.get_event_loop_policy().get_event_loop()
