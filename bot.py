@@ -124,10 +124,11 @@ bot = Client('bot',
 
 pdf_queue = AQueue()
 
-if dbname:
-    DB(dbname)
-else:
-    DB()
+if not env_vars['DB_URL']:
+    if dbname:
+        DB(dbname)
+    else:
+        DB()
 
 
 @bot.on_message(filters=~(filters.private & filters.incoming))
@@ -240,7 +241,11 @@ async def on_subs(client: Client, message: Message):
 @bot.on_message(filters=filters.regex(r'^/cancel ([^ ]+)$'))
 async def on_cancel_command(client: Client, message: Message):
     db = DB()
-    sub = await db.get(Subscription, (message.matches[0].group(1), str(message.from_user.id)))
+    if env_vars['DB_URL']:
+        sub = await db.get(Subscription, ({"url": url_, "user_id": str(message.from_user.id)}))
+    else:
+        sub = await db.get(Subscription, (message.matches[0].group(1), str(message.from_user.id)))
+    
     if not sub:
         return await message.reply("You were not subscribed to that manga.")
     await db.erase(sub)
@@ -367,7 +372,10 @@ async def manga_click(client, callback: CallbackQuery, pagination: Pagination = 
         full_pages[full_page_key].append(result.unique())
 
     db = DB()
-    subs = await db.get(Subscription, (pagination.manga.url, str(callback.from_user.id)))
+    if env_vars['DB_URL']:
+        subs = await db.get(Subscription, {"url":pagination.manga.url, "user_id": str(callback.from_user.id)})
+    else:
+        subs = await db.get(Subscription, (pagination.manga.url, str(callback.from_user.id)))
 
     prev = [InlineKeyboardButton('<<', f'{pagination.id}_{pagination.page - 1}')]
     next_ = [InlineKeyboardButton('>>', f'{pagination.id}_{pagination.page + 1}')]
@@ -497,11 +505,14 @@ async def send_manga_chapter(client: Client, chapter, chat_id):
                                                        f'error.\n\n{error_caption}')
             media_docs.append(InputMediaDocument(cbz, thumb=thumb_path))
 
+    channel = env_vars.get('CACHE_CHANNEL')
     if len(media_docs) == 0:
         messages: list[Message] = await retry_on_flood(client.send_message)(chat_id, success_caption)
     else:
         media_docs[-1].caption = success_caption
         messages: list[Message] = await retry_on_flood(client.send_media_group)(chat_id, media_docs)
+        if channel:
+            await retry_on_flood(client.send_media_group)(chat_id, media_docs)
 
     # Save file ids
     if download and media_docs:
@@ -539,7 +550,10 @@ async def favourite_click(client: Client, callback: CallbackQuery):
     fav = action == 'fav'
     manga = favourites[callback.data]
     db = DB()
-    subs = await db.get(Subscription, (manga.url, str(callback.from_user.id)))
+    if env_vars['DB_URL']:
+        subs = await db.get(Subscription, {'url': manga.url, 'user_id': str(callback.from_user.id)})
+    else:
+        subs = await db.get(Subscription, (manga.url, str(callback.from_user.id)))
     if not subs and fav:
         await db.add(Subscription(url=manga.url, user_id=str(callback.from_user.id)))
     if subs and not fav:
@@ -741,12 +755,10 @@ async def chapter_creation(worker_id: int = 0):
     """
     logger.debug(f"Worker {worker_id}: Starting worker")
     while True:
-        channel = env_vars.get('CACHE_CHANNEL')
         chapter, chat_id = await pdf_queue.get(worker_id)
         logger.debug(f"Worker {worker_id}: Got chapter '{chapter.name}' from queue for user '{chat_id}'")
         try:
             await send_manga_chapter(bot, chapter, chat_id)
-            await send_manga_chapter(bot, chapter, channel)
         except:
             logger.exception(f"Error sending chapter {chapter.name} to user {chat_id}")
         finally:
