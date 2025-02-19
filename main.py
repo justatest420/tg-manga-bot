@@ -6,7 +6,8 @@ async def async_main():
     if not env_vars['DB_URL']:
         db = DB()
         await db.connect()
-    pass
+    
+    return
     
 if __name__ == '__main__':
     loop = aio.get_event_loop_policy().get_event_loop()
