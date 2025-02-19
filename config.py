@@ -14,7 +14,7 @@ env_vars = {
   # Mongodb Url
   "DB_URL": "mongodb+srv://justatestsubject01:HzP5SK8ZiiLHcF3o@cluster0.wizfkbo.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
   
-  # Logs Channel Username Without @
+  # Logs Channel id
   "CACHE_CHANNEL": "",
   
   # Force Subs Channel username without @
