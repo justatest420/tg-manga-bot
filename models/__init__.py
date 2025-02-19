@@ -6,7 +6,7 @@ if env_vars['DB_URL']:
   logger.info("Using MongoDB")
   
 elif env_vars['DATABASE_URL_PRIMARY']:
-  from .db import DB, ChapterFile, Subscription, LastChapter, MangaName
+  from .db import *
   logger.info("Using Tembo DB")
 
 else:
