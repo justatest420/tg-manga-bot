@@ -36,7 +36,7 @@ class MangaName:
         self.name = name
 
 class DB():
-    def __init__(self, dbname: str = env_vars['DB_URL'], dbname_str: str = 'mangadb'):
+    def __init__(self, dbname: str = env_vars['DB_URL'], dbname_str: str = 'starttest'):
         self.client = MongoClient(dbname)
         self.db = self.client[dbname_str]
         self.chapter_files: Collection = self.db['chapter_files']
