@@ -40,7 +40,7 @@ all_search: Dict[str, str] = dict()
 
 plugin_dicts: Dict[str, Dict[str, MangaClient]] = {
     "🇬🇧 EN": {
-        #"MangaDex": MangaDexClient(),
+        "MangaDex": MangaDexClient(),
         "Mgeko": MgekoClient(),
         "MagaKakalot": MangaKakalotClient(),
         "Manganelo": ManganeloClient(),
