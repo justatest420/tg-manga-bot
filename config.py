@@ -7,6 +7,8 @@ env_vars = {
   "BOT_TOKEN": "",
   # Get For tembo.io
   "DATABASE_URL_PRIMARY": "",
+  # Mongodb Url
+  "DB_URL": "",
   # Logs Channel Username Without @
   "CACHE_CHANNEL": "",
   # Force Subs Channel username without @
